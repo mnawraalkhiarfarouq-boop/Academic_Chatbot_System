@@ -3,42 +3,23 @@ import sqlite3
 
 app = Flask(__name__)
 
-# محرك الرد الآلي (لحل مشكلة بطء الاستجابة)
-def academic_ai_logic(text):
-    knowledge_base = {
-        "التسجيل": "يبدأ التسجيل لكلية الحاسوب في 15 مايو عبر البوابة الإلكترونية.",
-        "الامتحانات": "جداول الامتحانات النهائية ستصدر في الأسبوع القادم في قسم الإعلانات.",
-        "تجميد": "لتقديم طلب تجميد، يجب مراجعة مكتب الشؤون الأكاديمية بالكلية."
+# وظيفة للبحث في اللوائح والامتحانات
+def search_academic_info(query):
+    # محاكاة للرد الذكي بناءً على أهداف مشروعك
+    knowledge = {
+        "لوائح": "لائحة الكلية تنص على ضرورة حضور 75% من المحاضرات لدخول الامتحان.",
+        "امتحان": "جدول امتحانات الفصل الدراسي الأول سيبدأ في الأسبوع الثاني من يناير.",
+        "جدول": "يمكنك العثور على جدولك الدراسي في لوحة الإعلانات الإلكترونية."
     }
-    for key in knowledge_base:
-        if key in text: return knowledge_base[key]
-    return None
+    for key in knowledge:
+        if key in query: return knowledge[key]
+    return "عذراً، تواصل مع الشؤون الأكاديمية لمزيد من التفاصيل حول هذا الموضوع."
 
 @app.route('/ask', methods=['POST'])
-def handle_inquiry():
-    data = request.json
-    user_id = data.get('user_id')
-    question = data.get('question')
-    
-    # محاولة الرد آلياً أولاً
-    auto_reply = academic_ai_logic(question)
-    
-    conn = sqlite3.connect('university.db')
-    cursor = conn.cursor()
-    
-    if auto_reply:
-        cursor.execute("INSERT INTO inquiries (student_id, question, answer, status) VALUES (?, ?, ?, ?)",
-                       (user_id, question, auto_reply, 'completed'))
-        response = {"reply": auto_reply, "type": "automated"}
-    else:
-        # إذا لم يجد رداً، يحولها كـ "مشكلة" للدكتور (كما في شكل 27.4)
-        cursor.execute("INSERT INTO inquiries (student_id, question, status) VALUES (?, ?, ?)",
-                       (user_id, question, 'pending'))
-        response = {"reply": "تم تحويل سؤالك للمشرف الأكاديمي، سيصلك الرد قريباً.", "type": "manual"}
-    
-    conn.commit()
-    conn.close()
-    return jsonify(response)
+def ask():
+    user_query = request.json.get("message")
+    response = search_academic_info(user_query)
+    return jsonify({"response": response})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
