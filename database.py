@@ -1,14 +1,46 @@
 import sqlite3
 
-# إنشاء ملف قاعدة البيانات
-conn = sqlite3.connect('university.db')
-cursor = conn.cursor()
+def init_db():
+    conn = sqlite3.connect('university.db')
+    cursor = conn.cursor()
+    
+    # جدول الصلاحيات والمستخدمين
+    cursor.execute('''CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        password TEXT,
+        role TEXT, -- 'student', 'doctor', 'admin'
+        department TEXT
+    )''')
 
-# إنشاء جدول الطلاب والنتائج والجداول
-cursor.execute('CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY, name TEXT, level INTEGER)')
-cursor.execute('CREATE TABLE IF NOT EXISTS results (student_id INTEGER, subject TEXT, grade TEXT)')
-cursor.execute('CREATE TABLE IF NOT EXISTS schedules (subject TEXT, day TEXT, time TEXT)')
+    # جدول الكليات (كما في شكل 29.4)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS colleges (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        location TEXT,
+        details TEXT
+    )''')
 
-conn.commit()
-conn.close()
-print("تم تجهيز قاعدة البيانات بنجاح!")
+    # جدول المواد (كما في شكل 31.4)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS courses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        course_name TEXT,
+        course_code TEXT
+    )''')
+
+    # جدول الاستشارات والمشاكل (كما في شكل 22.4 و 27.4)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS inquiries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER,
+        category TEXT, -- 'academic', 'health', 'social'
+        question TEXT,
+        answer TEXT,
+        status TEXT DEFAULT 'pending',
+        FOREIGN KEY(student_id) REFERENCES users(id)
+    )''')
+
+    conn.commit()
+    conn.close()
+
+if __name__ == "__main__":
+    init_db()
