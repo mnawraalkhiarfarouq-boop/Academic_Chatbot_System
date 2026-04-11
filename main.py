@@ -3,6 +3,10 @@ import sqlite3
 
 app = Flask(__name__)
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 def query_db(query, args=(), one=False):
     conn = sqlite3.connect('university.db')
     cursor = conn.cursor()
